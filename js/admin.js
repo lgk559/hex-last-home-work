@@ -10,21 +10,18 @@ function init(){
 }
 
 // 得到訂單
-
 function getOrder() {
-  const api = adminApi + "orders";
-  axios
-    .get(api, {
-      headers: {
-        Authorization: token,
-      },
-    })
+  adminInstance
+    .get("orders")
     .then((response) => {
       ordersData.splice(0,ordersData.length);
       ordersData.push(...response.data.orders);
       renderOrder();
       upDataChart();
-    });
+    })
+    .catch((error)=>{
+      doAlert(error.status, error.message);
+    })
 }
 
 // 渲染訂單
@@ -79,9 +76,6 @@ function renderOrder() {
   });
   orderPageTable.innerHTML = template_thead + template_all;
 }
-
-
-
 
 // 更新圖表
 function upDataChart() {
@@ -148,54 +142,47 @@ function manageOrders(e){
 
 // 刪除訂單
 function delOrder(orderId){  
-  let api = adminApi + "orders/" + orderId;
-  axios
-    .delete(api, {
-      headers: {
-        "Authorization" : token
-      },
-    })
+  adminInstance
+    .delete(`orders/${orderId}`)
     .then((res)=>{
       getOrder();
       upDataChart();
+      doAlert(res.status, "刪除成功");
+    })
+    .catch((error)=>{
+      doAlert(error.status, error.message)
     })
 }
 
 // 修改訂單狀態
 function changeOrder(orderId,orderType){
   let newOrderType = orderType === "true" ? false : true
-  let api = adminApi + "orders";
-  axios
-    .put(api, 
+  adminInstance
+    .put("orders", 
       {
       "data":
         {
           "id": orderId,
           "paid": newOrderType
         }
-      },
-      {
-        headers: {
-          "Authorization" : token
-        },
       }
     )
     .then((res)=>{
       getOrder();
+      doAlert(res.status, "修改成功")
+    })
+    .catch((error)=>{
+      doAlert(error.status, error.message)
     })
 }
 
 // 刪除全部訂單
 function delAllOrder(){
-  let api = adminApi + "orders";
   axios
-    .delete(api, {
-      headers: {
-        "Authorization" : token
-      },
-    })
+    .delete("orders")
     .then((res)=>{
       getOrder();
       upDataChart();
+      doAlert(res.status, "刪除成功")
     })
 }

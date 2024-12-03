@@ -35,14 +35,13 @@ function initType() {
 
 // 取得產品清單
 function getProducts() {
-  const api_getProducts = customerApi + "products";
-  axios.get(api_getProducts).then((response) => {
+  customerInstance.get("products")
+  .then((response) => {
     productsData = response.data.products;
     areaFliterData("全部");
   })
   .catch(function (error) {
-    // 拿錯誤訊息
-    console.log(error.response.data.message)
+    doAlert(error.status, error.message);
   })
 }
 
@@ -83,10 +82,14 @@ function renderAreaFilter(filteredData) {
 // 取得購物車
 function getCart() {
   const api_getCarts = customerApi + "carts";
-  axios.get(api_getCarts).then((response) => {
+  customerInstance.get("carts")
+  .then((response) => {
     cartData = response.data;
     renderCart();
-  });
+  })
+  .catch((error)=>{
+    doAlert(error.status, error.message);
+  })
 }
 
 // 購物車-觸發加入購物車按鈕
@@ -123,21 +126,28 @@ function mergeRepeatCartItem(productId, newAddQty = 1) {
 
 // 購物車-新增
 function addCart(productId, newAddQty) {
-  const api_addCarts = customerApi + "carts";
-  axios
-    .post(api_addCarts, { data: { productId: productId, quantity: newAddQty } })
-    .then((response) => {
-      cartData = response.data;
+  customerInstance
+    .post("carts", { data: { productId: productId, quantity: newAddQty } })
+    .then((res) => {
+      cartData = res.data;
       renderCart();
-    });
+      doAlert(res.status, "已加入購物車");
+    })
+    .catch((error)=>{
+      doAlert(error.status, error.message);
+    })
 }
 
 // 購物車-刪除
 function delCart(cartId = null) {
-  const api_delCart = cartId ? `${api}carts/${cartId}` : `${api}carts`;
-  axios.delete(api_delCart).then((response) => {
+  const api_delCart = cartId ? `carts/${cartId}` : `carts`;
+  customerInstance.delete(api_delCart).then((res) => {
+    doAlert(res.status, "刪除成功");
     getCart();
-  });
+  })
+  .catch((error)=>{
+    doAlert(error.status, error.message);
+  })
 }
 
 // 印出購物車清單
@@ -198,8 +208,9 @@ function renderCart() {
 }
 
 // 初始表單
-function initOrdeForm() {}
-
+function initOrdeForm() {
+  
+}
 const container = document.getElementById("customerPhone");
 container.addEventListener("change", function (e) {
   const firstTwoDigits = this.value.substring(0, 2);
@@ -249,7 +260,7 @@ const constraints = {
       message: "^必填",
     },
   },
-};
+}; 
 function checkOrdeForm(e) {
   e.preventDefault();
   let errors = validate(e.target.form, constraints);
@@ -284,14 +295,15 @@ function sendOrdeForm(user) {
     data: { user: user },
   };
   const api_addOrder = customerApi + "orders";
-  axios
-    .post(api_addOrder, data)
-    .then((response) => {
+  customerInstance
+    .post("orders", data)
+    .then((res) => {
       newOrderForm.reset();
+      doAlert(res.status, "訂單成立");
       getCart();
     })
-    .catch(function (error) {
+    .catch((error) => {
       // 請求失敗時
-      console.log(error);
+      doAlert(error.status, error.message);
     });
 }
