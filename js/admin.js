@@ -80,14 +80,7 @@ function renderOrder() {
   orderPageTable.innerHTML = template_thead + template_all;
 }
 
-// 時間格式
-function filtersDate(timestamp){
-  let date = new Date(timestamp*1000);
-  let year = date.getFullYear();
-  let getMonth = date.getMonth() + 1;
-  let getDate = date.getDate();
-  return `${year}/${getMonth}/${getDate}`;
-}
+
 
 
 // 更新圖表

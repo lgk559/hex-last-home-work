@@ -39,7 +39,11 @@ function getProducts() {
   axios.get(api_getProducts).then((response) => {
     productsData = response.data.products;
     areaFliterData("全部");
-  });
+  })
+  .catch(function (error) {
+    // 拿錯誤訊息
+    console.log(error.response.data.message)
+  })
 }
 
 // 篩選符合類別的產品
@@ -74,17 +78,7 @@ function renderAreaFilter(filteredData) {
   producUl.innerHTML = template;
 }
 
-// 格式化貨幣(加上當地貨幣代碼、三位一撇)
-function filtersCurrencyUSD(price) {
-  const currencyCode = "NT$";
-  price = Number(price).toFixed(0);
-  if (!isNaN(price)) {
-    const regex = /\B(?=(?:\d{3})+(?!\d))/g;
-    return `${currencyCode}${price.replace(regex, ",")}`;
-  } else {
-    return `${currencyCode}`;
-  }
-}
+
 
 // 取得購物車
 function getCart() {
