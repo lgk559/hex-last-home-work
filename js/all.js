@@ -7,6 +7,7 @@ const newOrderForm = document.querySelector(".orderInfo-form");
 const newOrderForm_inputs = document.querySelectorAll(".orderInfo-input");
 const newOrderForm_erroMessage =
   document.querySelectorAll(".orderInfo-message");
+
 init();
 
 // 初始
@@ -23,7 +24,7 @@ function init() {
   initType();
   getProducts();
   getCart();
-}
+};
 
 // 回複初始狀態
 function initType() {
@@ -35,6 +36,7 @@ function initType() {
 
 // 取得產品清單
 function getProducts() {
+  doLoading(true);
   customerInstance.get("products")
   .then((response) => {
     productsData = response.data.products;
@@ -43,7 +45,10 @@ function getProducts() {
   .catch(function (error) {
     doAlert(error.status, error.message);
   })
-}
+  .finally(()=>{
+    doLoading(false);
+  })
+};
 
 // 篩選符合類別的產品
 function areaFliterData(areaVlue = "全部") {
@@ -55,7 +60,7 @@ function areaFliterData(areaVlue = "全部") {
           (productItem) => productItem.category == selectArea
         );
   renderAreaFilter(filteredData);
-}
+};
 
 // 渲染產品清單
 function renderAreaFilter(filteredData) {
@@ -75,13 +80,11 @@ function renderAreaFilter(filteredData) {
             </li>`;
   });
   producUl.innerHTML = template;
-}
-
-
+};
 
 // 取得購物車
 function getCart() {
-  const api_getCarts = customerApi + "carts";
+  doLoading(true);
   customerInstance.get("carts")
   .then((response) => {
     cartData = response.data;
@@ -90,7 +93,10 @@ function getCart() {
   .catch((error)=>{
     doAlert(error.status, error.message);
   })
-}
+  .finally(()=>{
+    doLoading(false);
+  })
+};
 
 // 購物車-觸發加入購物車按鈕
 function clickAddCartBtn(e) {
@@ -111,7 +117,7 @@ function clickDelCartBtn(e) {
   } else if (e.target.className === "discardAllBtn") {
     delCart();
   }
-}
+};
 
 // 檢查是否有重複的品項
 function mergeRepeatCartItem(productId, newAddQty = 1) {
@@ -122,10 +128,11 @@ function mergeRepeatCartItem(productId, newAddQty = 1) {
     }
   });
   addCart(productId, newAddQty);
-}
+};
 
 // 購物車-新增
 function addCart(productId, newAddQty) {
+  doLoading(true);
   customerInstance
     .post("carts", { data: { productId: productId, quantity: newAddQty } })
     .then((res) => {
@@ -136,10 +143,14 @@ function addCart(productId, newAddQty) {
     .catch((error)=>{
       doAlert(error.status, error.message);
     })
-}
+    .finally(()=>{
+      doLoading(false);
+    })
+};
 
 // 購物車-刪除
 function delCart(cartId = null) {
+  doLoading(true);
   const api_delCart = cartId ? `carts/${cartId}` : `carts`;
   customerInstance.delete(api_delCart).then((res) => {
     doAlert(res.status, "刪除成功");
@@ -148,7 +159,10 @@ function delCart(cartId = null) {
   .catch((error)=>{
     doAlert(error.status, error.message);
   })
-}
+  .finally(()=>{
+    doLoading(false);
+  })
+};
 
 // 印出購物車清單
 function renderCart() {
@@ -205,12 +219,8 @@ function renderCart() {
   }
 
   shoppingCartTable.innerHTML = template;
-}
+};
 
-// 初始表單
-function initOrdeForm() {
-  
-}
 const container = document.getElementById("customerPhone");
 container.addEventListener("change", function (e) {
   const firstTwoDigits = this.value.substring(0, 2);
@@ -287,14 +297,14 @@ function checkOrdeForm(e) {
     sendOrdeForm(user);
     initType();
   }
-}
+};
 
 // 送出訂單
 function sendOrdeForm(user) {
   const data = {
     data: { user: user },
   };
-  const api_addOrder = customerApi + "orders";
+  doLoading(true);
   customerInstance
     .post("orders", data)
     .then((res) => {
@@ -305,5 +315,8 @@ function sendOrdeForm(user) {
     .catch((error) => {
       // 請求失敗時
       doAlert(error.status, error.message);
-    });
-}
+    })
+    .finally(()=>{
+      doLoading(false);
+    })
+};

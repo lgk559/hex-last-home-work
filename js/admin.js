@@ -7,10 +7,11 @@ function init(){
   orderPageTable.addEventListener("click",manageOrders);
   document.querySelector(".discardAllBtn").addEventListener("click",delAllOrder)
   getOrder();
-}
+};
 
 // 得到訂單
 function getOrder() {
+  doLoading(true);
   adminInstance
     .get("orders")
     .then((response) => {
@@ -22,7 +23,10 @@ function getOrder() {
     .catch((error)=>{
       doAlert(error.status, error.message);
     })
-}
+    .finally(()=>{
+      doLoading(false);
+    })
+};
 
 // 渲染訂單
 function renderOrder() {
@@ -75,7 +79,7 @@ function renderOrder() {
         `;
   });
   orderPageTable.innerHTML = template_thead + template_all;
-}
+};
 
 // 更新圖表
 function upDataChart() {
@@ -102,7 +106,7 @@ function upDataChart() {
   ]);
 
   readerChart(result)
-}
+};
 
 // 渲染圖表
 function readerChart(result) {
@@ -121,9 +125,9 @@ function readerChart(result) {
       ]
     },
   });
-}
+};
 
-// 
+// 管理訂單
 function manageOrders(e){
   e.preventDefault();
   let nodeName = e.target.nodeName;
@@ -138,10 +142,11 @@ function manageOrders(e){
     orderId = e.target.closest("[data-id]").dataset.id;
     delOrder(orderId)
   }
-}
+};
 
 // 刪除訂單
 function delOrder(orderId){  
+  doLoading(true);
   adminInstance
     .delete(`orders/${orderId}`)
     .then((res)=>{
@@ -152,10 +157,14 @@ function delOrder(orderId){
     .catch((error)=>{
       doAlert(error.status, error.message)
     })
-}
+    .finally(()=>{
+      doLoading(false);
+    })
+};
 
 // 修改訂單狀態
 function changeOrder(orderId,orderType){
+  doLoading(true);
   let newOrderType = orderType === "true" ? false : true
   adminInstance
     .put("orders", 
@@ -174,15 +183,24 @@ function changeOrder(orderId,orderType){
     .catch((error)=>{
       doAlert(error.status, error.message)
     })
-}
+    .finally(()=>{
+      doLoading(false);
+    })
+};
 
 // 刪除全部訂單
 function delAllOrder(){
-  axios
+  adminInstance
     .delete("orders")
     .then((res)=>{
       getOrder();
       upDataChart();
       doAlert(res.status, "刪除成功")
     })
-}
+    .catch((error)=>{
+      doAlert(error.status, error.message)
+    })
+    .finally(()=>{
+      doLoading(false);
+    })
+};
