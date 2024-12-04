@@ -5,7 +5,9 @@ init();
 
 function init(){
   orderPageTable.addEventListener("click",manageOrders);
-  document.querySelector(".discardAllBtn").addEventListener("click",delAllOrder)
+  document.querySelector(".discardAllBtn").addEventListener("click",delAllOrder);
+  document.querySelector("#doAllChart").addEventListener("click",()=>{upDataChart("all")});
+  document.querySelector("#doRankingChart").addEventListener("click",()=>{upDataChart("ranking")})
   getOrder();
 };
 
@@ -62,7 +64,7 @@ function renderOrder() {
 
     template_all += `
             <tr data-id="${item.id}">
-                <td>${filtersDate(item.createdAt)}</td>
+                <td>${item.id}</td>
                 ${template_user}
                 <td>
                     ${template_productList}
@@ -82,35 +84,40 @@ function renderOrder() {
 };
 
 // 更新圖表
-function upDataChart() {
+function upDataChart(filter = "all") {
   const categorySales = ordersData.reduce((acc, order) => {
     order.products.forEach((product) => {
       const { category, price, quantity } = product;
       const totalForProduct = price * quantity;
 
-      // 如果 acc 中已經有這個 category，就加上這次的銷售額
       if (acc[category]) {
         acc[category] += totalForProduct;
       } else {
-        // 如果沒有，就新增一個
         acc[category] = totalForProduct;
       }
     });
     return acc;
   }, {});
-
-  // 將物件轉換成你想要的二維陣列格式
-  const result = Object.entries(categorySales).map(([category, total]) => [
-    category,
-    total,
-  ]);
-
-  readerChart(result)
+  
+  if(filter === "ranking"){
+    const sortedSales = Object.entries(categorySales).sort((a,b)=>b[1] - a[1]);
+    const restTotal = sortedSales.slice(4).reduce((total,[_,sale])=> total + sale,0)
+    const result = [
+      ...sortedSales.slice(0,3),
+    ];
+    result.push(['其他', restTotal])
+    readerChart(result);
+  }
+  else if(filter === "all"){
+    const result = [
+      ...Object.entries(categorySales),
+    ];
+    readerChart(result);
+  }
 };
 
 // 渲染圖表
 function readerChart(result) {
-  // C3.js
   let chart = c3.generate({
     bindto: "#chart", // HTML 元素綁定
     data: {
@@ -122,6 +129,7 @@ function readerChart(result) {
         "#5151D3",
         "#E68618",
         "#26C0C7",
+        "red",
       ]
     },
   });
